@@ -11,13 +11,11 @@ Data pipeline for bow build and GMU datasets, powering a data-driven bow hunter 
 5. Install dependencies: `pip install -r requirements.txt`.
 6. Run MinIO for local S3: `docker run -p 9000:9000 -p 9001:9001 minio/minio server /data --console-address ":9001"`.
 7. Start FastMCP server: `python src/server.py`.
-8. Run Mage pipeline: `mage run . process_data`.
 
 ## Structure
 
 - **src/**: Pipeline code (FastMCP server, Mage pipelines, DuckDB queries).
   - **server.py**: FastMCP server for ingestion and querying.
-  - **pipelines/process_data.py**: Mage pipeline for data processing.
   - **ingest.py**: Stagehand scraping logic.
   - **query.py**: DuckDB query functions.
 - **tests/**: Unit tests.

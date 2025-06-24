@@ -194,6 +194,5 @@ cython_debug/
 .cursorindexingignore
 .cursor/
 
-
-# Memory Bank MCP
-.clinerules-*
+# Memory bank
+memory-bank/

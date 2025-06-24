@@ -1,17 +1,18 @@
-import ast
 import re
 import pdfplumber
 import pandas as pd
 import duckdb
 import os
+import glob
 
-def ingest_elk_population_data(pdf_path: str, db_path: str = './data/database/herd_data.duckdb'):
+def ingest_elk_population_data(pdf_path: str, year: int, db_path: str = './data/database/herd_data.duckdb'):
     """
     Ingests elk population and sex ratio post-hunt data from a PDF, processes it, and write it to a parquet file
     to be loaded into a DuckDB database.
 
     Args:
         pdf_path (str): The path to the input PDF file.
+        year (int): The year of the data.
         db_path (str): The path to the DuckDB database file.
     """
     if not os.path.exists(pdf_path):
@@ -32,9 +33,10 @@ def ingest_elk_population_data(pdf_path: str, db_path: str = './data/database/he
             if not tables:
                 print("No tables found in the PDF.")
                 return
-
+            
             table = tables[0]
 
+            print(table)
             for row in table[1:]:
                 row_text = str(row[0]).strip()
                 
@@ -78,27 +80,17 @@ def ingest_elk_population_data(pdf_path: str, db_path: str = './data/database/he
                     herd_name = ' '.join(herd_name_parts)
                     gmu = ''.join(gmu_parts)
 
-                    data.append([dau, herd_name, gmu, estimate, ratio])
+                    data.append([dau, herd_name, gmu, estimate, ratio, year])
 
                 else:
                     print(f"Could not parse row (insufficient parts): {remaining_text}")
                 
-    except Exception as e:
-        print(f"Error processing PDF: {e}")
-        return
-
-    if not data:
-        print("No data extracted from PDF. Check PDF content and table extraction settings.")
-        return
-
-    # Create a DataFrame
-    try:
-        columns = ['dau', 'herd_name', 'gmu_list', 'post_hunt_estimate', 'bull_cow_ratio']
-        df = pd.DataFrame(data, columns=columns)
+        df = pd.DataFrame(data, columns=['dau', 'herd_name', 'gmu_list', 'post_hunt_estimate', 'bull_cow_ratio', 'year'])
 
         # Clean datatypes
         df['dau'] = df['dau'].astype(str)
         df['herd_name'] = df['herd_name'].astype(str)
+        df['year'] = pd.to_numeric(df['year'], errors='coerce')
 
         df['post_hunt_estimate'] = pd.to_numeric(
             df['post_hunt_estimate'].str.replace(',',''),
@@ -111,15 +103,14 @@ def ingest_elk_population_data(pdf_path: str, db_path: str = './data/database/he
         )
 
         # Drop empty herds
-        df = df[df['bull_cow_ratio'] != 0] 
+        df = df[df['bull_cow_ratio'] != 0]
 
         # Create and write processed data to parquet file  
-        parquet_dir = './data/processed/elk/population/2024'
+        parquet_dir = f'./data/processed/elk/population/{year}'
         os.makedirs(parquet_dir, exist_ok=True)
-        parquet_file_path = os.path.join(parquet_dir, 'colorado_elk_population_2024.parquet')
+        parquet_file_path = os.path.join(parquet_dir, f'colorado_elk_population_{year}.parquet')
 
         df.to_parquet(parquet_file_path, index=False)
-
 
     except ValueError as e:
         print(f"Error creating DataFrame: {e}. Check headers and data rows consistency.")
@@ -137,7 +128,8 @@ def ingest_elk_population_data(pdf_path: str, db_path: str = './data/database/he
                     gmu_list VARCHAR,
                     post_hunt_estimate BIGINT,
                     bull_cow_ratio DOUBLE,
-                    PRIMARY KEY (dau, herd_name, gmu_list)
+                    year BIGINT,
+                    PRIMARY KEY (dau, herd_name, gmu_list, year)
                 );
             """)
 
@@ -146,9 +138,9 @@ def ingest_elk_population_data(pdf_path: str, db_path: str = './data/database/he
 
             con.execute(f"""
                 INSERT INTO {table_name} 
-                SELECT dau, herd_name, gmu_list, post_hunt_estimate, bull_cow_ratio 
+                SELECT dau, herd_name, gmu_list, post_hunt_estimate, bull_cow_ratio, year 
                 FROM new_elk_data
-                ON CONFLICT (dau, herd_name, gmu_list) 
+                ON CONFLICT (dau, herd_name, gmu_list, year) 
                 DO UPDATE SET
                     post_hunt_estimate = EXCLUDED.post_hunt_estimate,
                     bull_cow_ratio = EXCLUDED.bull_cow_ratio;
@@ -163,8 +155,14 @@ def ingest_elk_population_data(pdf_path: str, db_path: str = './data/database/he
 
 
 if __name__ == "__main__":
-    # Example usage:
-    # Make sure to place the downloaded PDF in this path:
-    pdf_file_path = './data/raw/elk/population/2024/colorado_elk_population_2024.pdf'
     duckdb_database_path = './data/database/herd_data.duckdb'
-    ingest_elk_population_data(pdf_file_path, duckdb_database_path) 
+
+    pdf_files = glob.glob('./data/raw/elk/population/*.pdf')
+    for pdf_file_path in pdf_files:
+        match = re.search(r'(\d{4})\.pdf$', pdf_file_path)
+        if match:
+            year = int(match.group(1))
+            print(f"Ingesting data for year: {year} from {pdf_file_path}")
+            ingest_elk_population_data(pdf_file_path, year, duckdb_database_path)
+        else:
+            print(f"Could not extract year from filename: {pdf_file_path}") 

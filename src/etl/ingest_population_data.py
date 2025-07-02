@@ -108,6 +108,9 @@ def ingest_elk_population_data(pdf_path: str, year: int):
         # Drop empty herds
         df = df[df["bull_cow_ratio"] != 0]
 
+        # Drop erroneous gmu list
+        df = df[df["gmu_list"] != "notin"]
+
         # Create and write processed data to parquet file
         parquet_dir = f"./data/processed/elk/population/{year}"
         os.makedirs(parquet_dir, exist_ok=True)

@@ -135,6 +135,8 @@ def rows_to_data_frame(table):
         .astype("Int64")
     )
 
+    df= df[df["unit"].notnull()]
+
     numeric_cols = [
         "bulls",
         "cows",

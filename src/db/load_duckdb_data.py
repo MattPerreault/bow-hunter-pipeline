@@ -7,7 +7,7 @@ import traceback
 
 def execute_hydration_scripts(db_path, sql_dir):
     """
-    Loads processed elk population data from parquet files into a DuckDB database.
+    Loads processed elk population stage data from parquet files into a DuckDB database.
 
     Args:
         processed_data_dir (str): Directory containing processed parquet files.

@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS elk_population (
+CREATE TABLE IF NOT EXISTS elk_population_stage (
     dau VARCHAR,
     herd_name VARCHAR,
     gmu_list VARCHAR,

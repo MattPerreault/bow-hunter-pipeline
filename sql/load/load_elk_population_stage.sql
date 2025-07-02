@@ -1,4 +1,4 @@
-INSERT INTO elk_population 
+INSERT INTO elk_population_stage 
 SELECT 
     dau,
     herd_name,

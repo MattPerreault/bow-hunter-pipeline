@@ -36,7 +36,7 @@ def wait_for_job(job_id):
 
         if status in ["SUCCEEDED", "FAILED"]:
             return status
-        time.sleep(5)
+        time.sleep(10)
 
 
 def get_blocks(job_id):

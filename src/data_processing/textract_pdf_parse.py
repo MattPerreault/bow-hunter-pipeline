@@ -36,7 +36,7 @@ def wait_for_job(job_id):
 
         if status in ["SUCCEEDED", "FAILED"]:
             return status
-        time.sleep(5)
+        time.sleep(10)
 
 
 def get_blocks(job_id):
@@ -125,6 +125,9 @@ def rows_to_data_frame(table):
     filtered_rows = [row for row in data_rows if row[0].strip().lower() != "total"]
 
     df = pd.DataFrame(filtered_rows, columns=headers)
+
+    df["year"] = 2024
+    df["season"] = "archery"
 
     df["unit"] = (
         df["unit"]

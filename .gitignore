@@ -201,4 +201,4 @@ memory-bank/
 # Data files
 *.parquet
 *.duckdb
-.data/*
+data/

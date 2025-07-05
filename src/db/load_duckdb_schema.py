@@ -19,7 +19,7 @@ def execute_sql_scripts(db_path, sql_dir):
                 print(f"Successfully executed {sql_file}")
             except Exception as e:
                 print(f"Error executing {sql_file}: {e}")
-        
+
         con.close()
 
 

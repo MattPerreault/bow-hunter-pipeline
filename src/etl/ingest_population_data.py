@@ -202,8 +202,7 @@ def rows_to_data_frame(
     SPECIES_RATIO_HEADERS = {
         "elk": ["bull_cow_ratio_(per_100)", "bull_per_cow_ratio_(per_100)"],
         "deer": ["buck_doe_ratio_(per_100)", "buck_per_doe_ratio_(per_100)"],
-        # future species:
-        # "moose": ["bull_cow_ratio_(per_100)"],
+        "pronghorn": ["buck_per_doe_ratio_(per_100)"],
     }
 
     # Potential GMU column header regexes (with typo resilience)

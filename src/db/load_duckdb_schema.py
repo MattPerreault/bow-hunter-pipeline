@@ -5,7 +5,10 @@ import glob
 
 def execute_sql_scripts(db_path, sql_dir):
     sql_files = sorted(glob.glob(os.path.join(sql_dir, "*sql")))
-    print(sql_files)
+
+    db_dir = os.path.dirname(db_path)
+    os.makedirs(db_dir, exist_ok=True)
+
     with duckdb.connect(database=db_path) as con:
 
         for sql_file in sql_files:

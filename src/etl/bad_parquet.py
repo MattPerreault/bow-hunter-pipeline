@@ -2,6 +2,7 @@ import duckdb
 import boto3
 import os
 
+
 def find_stale_parquet_files(bucket_name):
     s3_client = boto3.client("s3")
     paginator = s3_client.get_paginator("list_objects_v2")
@@ -33,6 +34,7 @@ def find_stale_parquet_files(bucket_name):
             print(f)
     else:
         print("\n✅ All parquet files contain 'male_female_ratio'.")
+
 
 if __name__ == "__main__":
     bucket_name = os.environ.get("HERD_KNOWLEDGE_BUCKET")
